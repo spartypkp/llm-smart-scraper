@@ -17,9 +17,10 @@ class ScraperResult(BaseModel):
     processing_path: str  # Track which path we took: 'direct_reference', 'simple_search', 'pathfinder'
 
 class LegislationScraper:
-    def __init__(self):
+    def __init__(self, headless: bool = True):
         self.options = Options()
-        self.options.add_argument('--headless')
+        if headless:
+            self.options.add_argument('--headless')
         self.driver = webdriver.Chrome(options=self.options)
         self.pathfinder = Pathfinder()
         self.MAX_SIMPLE_PAGE_SIZE = 50000  # characters
@@ -39,6 +40,84 @@ class LegislationScraper:
             # Convert to BeautifulSoup for analysis
             soup = BeautifulSoup(raw_html, 'html.parser')
             
+
+            ## Extensions/Patterns:
+            # 1. Standard Web Scraping
+            # - No extension (regular webpage)
+            # - .html
+            # - .htm
+            # - .php 
+            # - .pl (Perl-generated pages)
+            # - .wxe (Web extension, typically static content)
+            # - .txt (plain text)
+            # - .xml (structured markup)
+
+            # Strategy:
+            # - Simple HTTP request
+            # - Parse with BeautifulSoup
+            # - Look for content in standard HTML structure
+            # - These are typically static or server-rendered pages
+            # - XML might need special parsing but same basic approach
+
+
+            ## Extensions/Patterns:
+            # 2. Javascript Heavy Pages
+            # - .aspx (ASP.NET pages)
+            # - Many modern SPAs (might have no extension)
+
+            # Strategy:
+            # - Use Selenium in headless mode
+            # - Wait for JavaScript rendering
+            # - Handle dynamic content loading
+            # - Consider implementing wait conditions for specific elements
+            # - May need to handle AJAX requests
+
+
+            # Extensions/Patterns:
+            # 3. File Downloads
+            # - .pdf
+            # - .doc, .docx
+            # - .ashx (ASP.NET handler, usually for file downloads)
+            # - /download in URL
+            # - Many government sites use these for official documents
+
+            # Strategy:
+            # - Implement file download handling
+            # - Need different parsers for each file type
+            # - Consider using libraries like:
+            # - PyPDF2 for PDFs
+            # - python-docx for Word documents
+            # - May need to store downloaded files temporarily
+            # - Extract text content from downloads
+
+            ## Extensions/Patterns:
+            # 4. Auth Required
+            # - .jsp (Timor-Leste case)
+            # - Some /api/ endpoints
+            # - Some government portals
+
+            # Strategy:
+            # - Need to handle login flows
+            # - Store/manage session cookies
+            # - May need to bypass CAPTCHA
+            # - Consider if scraping is allowed under Terms of Service
+
+            # Possible web page types:
+            # - no extension (regular webpage)
+            # - .aspx (Selenium needed)
+            # - .ashx Cannot process as webpage, is file download
+            # - .pdf Cannot process as webpage, is PDF
+            # - .html (process like regular webpage)
+            # - .php (process like regular webpage)
+            # - /download (likely PDF/file download)
+            # - .docx or .doc (Download to word document)
+            # - .jsp (only TL jurisdiction, Timor-Leste. Requires log in.)
+            # - .wxe (Process like regular webpage)
+            # - .pl (Perl extension, process like regular webpage)
+            # - .txt (plain text, process like regular webpage)
+            # - .htm (process like regular webpage)
+            # - .xml (process like regular webpage)
+
             # Decision tree implementation
             if '#' in citation.link_legal_reference:
                 return self._handle_direct_reference(soup, citation)
@@ -96,9 +175,10 @@ class LegislationScraper:
         target_element = soup.find(id=element_id)
         
         if target_element:
+            print(target_element.prettify())
             return ScraperResult(
                 status='success',
-                content=target_element.get_text(),
+                content=target_element.prettify(),
                 confidence=0.9,
                 requires_human_review=False,
                 processing_path='direct_reference'
