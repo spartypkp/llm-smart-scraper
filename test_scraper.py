@@ -4,8 +4,8 @@ from typing import List, Dict
 import json
 import logging
 from datetime import datetime
-from pydanticModels import Citation
-import database as db
+from utils.pydanticModels import Citation
+import utils.database as db
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,

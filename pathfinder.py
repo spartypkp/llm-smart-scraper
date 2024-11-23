@@ -18,7 +18,7 @@
 from bs4 import BeautifulSoup
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Union
-from pydanticModels import Citation
+from utils.pydanticModels import Citation
 
 
 class PathfinderResult(BaseModel):

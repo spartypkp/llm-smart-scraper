@@ -5,7 +5,7 @@ from typing import Optional, Dict, Union
 import time
 from pathfinder import Pathfinder, PathfinderResult
 from pydantic import BaseModel
-from pydanticModels import Citation
+from utils.pydanticModels import Citation
 
 class ScraperResult(BaseModel):
     """Standardized result format for scraping operations"""
